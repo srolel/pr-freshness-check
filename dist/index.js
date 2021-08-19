@@ -44,10 +44,10 @@ function run() {
             const { context } = github;
             // This should be a token with access to your repository scoped in as a secret.
             // The YML workflow will need to set myToken with the GitHub Secret Token
-            // myToken: ${{ secrets.GITHUB_TOKEN }}
+            // GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             // https://help.github.com/en/actions/automating-your-workflow-with-github-actions/authenticating-with-the-github_token#about-the-github_token-secret
-            const myToken = core.getInput('myToken');
-            const octokit = github.getOctokit(myToken);
+            const githubToken = core.getInput('GITHUB_TOKEN', { required: true });
+            const octokit = github.getOctokit(githubToken);
             const { data: { default_branch } } = yield octokit.rest.repos.get(Object.assign({}, context.repo));
             const { data: { commit: defaultBranchCommit } } = yield octokit.rest.repos.getBranch(Object.assign(Object.assign({}, context.repo), { branch: default_branch }));
             const defaultBranchCommitDate = ((_a = defaultBranchCommit.commit.committer) === null || _a === void 0 ? void 0 : _a.date) || ((_b = defaultBranchCommit.commit.author) === null || _b === void 0 ? void 0 : _b.date);
