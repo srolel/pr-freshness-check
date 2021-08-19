@@ -7,11 +7,11 @@ async function run(): Promise<void> {
 
     // This should be a token with access to your repository scoped in as a secret.
     // The YML workflow will need to set myToken with the GitHub Secret Token
-    // myToken: ${{ secrets.GITHUB_TOKEN }}
+    // GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     // https://help.github.com/en/actions/automating-your-workflow-with-github-actions/authenticating-with-the-github_token#about-the-github_token-secret
-    const myToken = core.getInput('myToken')
+    const githubToken = core.getInput('GITHUB_TOKEN')
 
-    const octokit = github.getOctokit(myToken)
+    const octokit = github.getOctokit(githubToken)
 
     const {
       data: {default_branch}
