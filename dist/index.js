@@ -52,14 +52,14 @@ function createAction(core, github) {
             if (!currentBranchBaseCommitDate) {
                 throw new Error(`Coult not determine HEAD timestamp of branch ${pullRequestRef}`);
             }
-            core.info(`sha ${currentBranchBaseCommit.sha} commit date: ${currentBranchBaseCommitDate}`);
+            core.info(`base sha ${currentBranchBaseCommit.sha} commit date: ${currentBranchBaseCommitDate}`);
             const delta = +new Date(targetBranchHeadCommitDate) -
                 +new Date(currentBranchBaseCommitDate);
             const deltaHours = Math.floor(delta / 1000 / 60 / 60);
-            core.info(`HEAD (commit ${targetBranchHeadCommit.sha}) of branch ${pullRequestBaseRef} is ${deltaHours} hours ahead of base commit ${currentBranchBaseCommit.sha} in branch ${pullRequestRef}`);
-            if (deltaHours > freshnessHours) {
-                core.setFailed(`Commit is not fresh because it is more than ${freshnessHours} hours behind target branch HEAD (commit ${targetBranchHeadCommit})`);
-                octokit.rest.pulls.createReviewComment(Object.assign(Object.assign({}, context.repo), { pull_number: context.payload.pull_request.number, body: `Hi There! Looks like HEAD (commit ${targetBranchHeadCommit.sha}) of branch ${pullRequestBaseRef} is ${Math.abs(deltaHours)} hours ahead of base commit ${currentBranchBaseCommit.sha}. We require all merged branches to be no more than ${freshnessHours} hours behind the target branch. Please rebase the branch in this pull request!` }));
+            core.info(`HEAD (commit ${targetBranchHeadCommit.sha}) of branch ${pullRequestBaseRef} is more than ${deltaHours} hours ahead of base commit ${currentBranchBaseCommit.sha} in branch ${pullRequestRef}`);
+            if (deltaHours >= freshnessHours) {
+                core.setFailed(`Commit is not fresh because it is more than ${freshnessHours} hours behind target branch HEAD (commit ${targetBranchHeadCommit.sha})`);
+                yield octokit.rest.issues.createComment(Object.assign(Object.assign({}, context.repo), { issue_number: context.payload.pull_request.number, body: `Hi there! Looks like ${pullRequestBaseRef} branch's HEAD commit ${targetBranchHeadCommit.sha} is more than ${deltaHours} hours ahead of base commit ${currentBranchBaseCommit.sha}. We require all merged branches to be no more than ${freshnessHours} hours behind the target branch. Please rebase the branch in this pull request!` }));
             }
         }
         catch (error) {

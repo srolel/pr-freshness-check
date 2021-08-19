@@ -19,8 +19,8 @@ describe('createAction tests', () => {
         getBranch: jest.fn(),
         getCommit: jest.fn()
       },
-      pulls: {
-        createReviewComment: jest.fn()
+      issues: {
+        createComment: jest.fn()
       }
     }
   }
@@ -34,6 +34,7 @@ describe('createAction tests', () => {
       ref: 'pr_ref',
       payload: {
         pull_request: {
+          number: 1,
           base: {ref: 'base_ref'} as any
         }
       }
@@ -52,6 +53,7 @@ describe('createAction tests', () => {
       ref: 'pr_ref',
       payload: {
         pull_request: {
+          number: 1,
           base: {ref: 'base_ref', sha: 'base_sha'} as any
         }
       }
@@ -67,12 +69,12 @@ describe('createAction tests', () => {
     github.context.payload.pull_request.base.ref = null
     await run()
     expect(core.setFailed.mock.calls).toMatchInlineSnapshot(`
-Array [
-  Array [
-    "Could not determine base branch from payload",
-  ],
-]
-`)
+      Array [
+        Array [
+          "Could not determine base branch from payload",
+        ],
+      ]
+    `)
   })
 
   test('pass', async () => {
@@ -80,65 +82,65 @@ Array [
       data: {commit: {commit: {committer: {date: '2021-08-19T05:30:25.063Z'}}}}
     }))
     octokit.rest.repos.getCommit.mockImplementationOnce(() => ({
-      data: {commit: {committer: {date: '2021-08-19T04:30:25.063Z'}}}
+      data: {commit: {committer: {date: '2021-08-19T05:20:25.063Z'}}}
     }))
     await run()
     expect(octokit.rest.repos.getBranch).toMatchInlineSnapshot(`
-[MockFunction] {
-  "calls": Array [
-    Array [
-      Object {
-        "branch": "base_ref",
-        "owner": "owner",
-        "repo": "repo",
-      },
-    ],
-  ],
-  "results": Array [
-    Object {
-      "type": "return",
-      "value": Object {
-        "data": Object {
-          "commit": Object {
-            "commit": Object {
-              "committer": Object {
-                "date": "2021-08-19T05:30:25.063Z",
+      [MockFunction] {
+        "calls": Array [
+          Array [
+            Object {
+              "branch": "base_ref",
+              "owner": "owner",
+              "repo": "repo",
+            },
+          ],
+        ],
+        "results": Array [
+          Object {
+            "type": "return",
+            "value": Object {
+              "data": Object {
+                "commit": Object {
+                  "commit": Object {
+                    "committer": Object {
+                      "date": "2021-08-19T05:30:25.063Z",
+                    },
+                  },
+                },
               },
             },
           },
-        },
-      },
-    },
-  ],
-}
-`)
+        ],
+      }
+    `)
     expect(octokit.rest.repos.getCommit).toMatchInlineSnapshot(`
-[MockFunction] {
-  "calls": Array [
-    Array [
-      Object {
-        "owner": "owner",
-        "ref": "base_sha",
-        "repo": "repo",
-      },
-    ],
-  ],
-  "results": Array [
-    Object {
-      "type": "return",
-      "value": Object {
-        "data": Object {
-          "commit": Object {
-            "committer": Object {
-              "date": "2021-08-19T04:30:25.063Z",
+      [MockFunction] {
+        "calls": Array [
+          Array [
+            Object {
+              "owner": "owner",
+              "ref": "base_sha",
+              "repo": "repo",
+            },
+          ],
+        ],
+        "results": Array [
+          Object {
+            "type": "return",
+            "value": Object {
+              "data": Object {
+                "commit": Object {
+                  "committer": Object {
+                    "date": "2021-08-19T05:20:25.063Z",
+                  },
+                },
+              },
             },
           },
-        },
-      },
-    },
-  ],
-}
-`)
+        ],
+      }
+    `)
     expect(core.setFailed.mock.calls).toMatchInlineSnapshot(`Array []`)
   })
 
@@ -154,83 +156,83 @@ Array [
     octokit.rest.repos.getCommit.mockImplementationOnce(() => ({
       data: {
         sha: 'current_branch_base_commit_sha',
-        commit: {committer: {date: '2021-08-19T03:30:25.063Z'}}
+        commit: {committer: {date: '2021-08-19T04:30:25.063Z'}}
       }
     }))
     await run()
     expect(octokit.rest.repos.getBranch).toMatchInlineSnapshot(`
-[MockFunction] {
-  "calls": Array [
-    Array [
-      Object {
-        "branch": "base_ref",
-        "owner": "owner",
-        "repo": "repo",
-      },
-    ],
-  ],
-  "results": Array [
-    Object {
-      "type": "return",
-      "value": Object {
-        "data": Object {
-          "commit": Object {
-            "commit": Object {
-              "committer": Object {
-                "date": "2021-08-19T05:30:25.063Z",
+      [MockFunction] {
+        "calls": Array [
+          Array [
+            Object {
+              "branch": "base_ref",
+              "owner": "owner",
+              "repo": "repo",
+            },
+          ],
+        ],
+        "results": Array [
+          Object {
+            "type": "return",
+            "value": Object {
+              "data": Object {
+                "commit": Object {
+                  "commit": Object {
+                    "committer": Object {
+                      "date": "2021-08-19T05:30:25.063Z",
+                    },
+                  },
+                  "sha": "target_branch_head_commit_sha",
+                },
               },
             },
-            "sha": "target_branch_head_commit_sha",
           },
-        },
-      },
-    },
-  ],
-}
-`)
+        ],
+      }
+    `)
     expect(octokit.rest.repos.getCommit).toMatchInlineSnapshot(`
-[MockFunction] {
-  "calls": Array [
-    Array [
-      Object {
-        "owner": "owner",
-        "ref": "base_sha",
-        "repo": "repo",
-      },
-    ],
-  ],
-  "results": Array [
-    Object {
-      "type": "return",
-      "value": Object {
-        "data": Object {
-          "commit": Object {
-            "committer": Object {
-              "date": "2021-08-19T03:30:25.063Z",
+      [MockFunction] {
+        "calls": Array [
+          Array [
+            Object {
+              "owner": "owner",
+              "ref": "base_sha",
+              "repo": "repo",
+            },
+          ],
+        ],
+        "results": Array [
+          Object {
+            "type": "return",
+            "value": Object {
+              "data": Object {
+                "commit": Object {
+                  "committer": Object {
+                    "date": "2021-08-19T04:30:25.063Z",
+                  },
+                },
+                "sha": "current_branch_base_commit_sha",
+              },
             },
           },
-          "sha": "current_branch_base_commit_sha",
-        },
-      },
-    },
-  ],
-}
-`)
+        ],
+      }
+    `)
     expect(core.setFailed.mock.calls).toMatchInlineSnapshot(`
 Array [
   Array [
-    "Commit is not fresh because it is more than 1 hours behind target branch HEAD (commit [object Object])",
+    "Commit is not fresh because it is more than 1 hours behind target branch HEAD (commit target_branch_head_commit_sha)",
   ],
 ]
 `)
-    expect(octokit.rest.pulls.createReviewComment).toMatchInlineSnapshot(`
+    expect(octokit.rest.issues.createComment).toMatchInlineSnapshot(`
 [MockFunction] {
   "calls": Array [
     Array [
       Object {
-        "body": "Hi There! Looks like HEAD (commit target_branch_head_commit_sha) of branch base_ref is 2 hours ahead of base commit current_branch_base_commit_sha. We require all merged branches to be no more than 1 hours behind the target branch. Please rebase the branch in this pull request!",
+        "body": "Hi there! Looks like base_ref branch's HEAD commit target_branch_head_commit_sha is more than 1 hours ahead of base commit current_branch_base_commit_sha. We require all merged branches to be no more than 1 hours behind the target branch. Please rebase the branch in this pull request!",
+        "issue_number": 1,
         "owner": "owner",
-        "pull_number": undefined,
         "repo": "repo",
       },
     ],
