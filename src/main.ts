@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import {Cipher} from 'crypto'
 
 async function run(): Promise<void> {
   try {
@@ -11,6 +12,7 @@ async function run(): Promise<void> {
     // https://help.github.com/en/actions/automating-your-workflow-with-github-actions/authenticating-with-the-github_token#about-the-github_token-secret
     const githubToken = core.getInput('GITHUB_TOKEN', {required: true})
     core.debug(`test ${core.getInput('test')}`)
+    console.log(`test ${core.getInput('test')}`)
 
     const octokit = github.getOctokit(githubToken)
 
