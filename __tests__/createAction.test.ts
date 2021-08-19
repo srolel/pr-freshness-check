@@ -221,7 +221,7 @@ describe('createAction tests', () => {
     expect(core.setFailed.mock.calls).toMatchInlineSnapshot(`
 Array [
   Array [
-    "Commit is not fresh because it is more than 1 hours behind target branch HEAD (commit target_branch_head_commit_sha)",
+    "PR Branch is not fresh because it is more than 1 hours behind target branch HEAD (commit target_branch_head_commit_sha)",
   ],
 ]
 `)
