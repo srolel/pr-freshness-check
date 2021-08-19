@@ -51,10 +51,10 @@ function run() {
             const { data: { default_branch } } = yield octokit.rest.repos.get(Object.assign({}, context.repo));
             const { data: { commit: defaultBranchCommit } } = yield octokit.rest.repos.getBranch(Object.assign(Object.assign({}, context.repo), { branch: default_branch }));
             const defaultBranchCommitDate = ((_a = defaultBranchCommit.commit.committer) === null || _a === void 0 ? void 0 : _a.date) || ((_b = defaultBranchCommit.commit.author) === null || _b === void 0 ? void 0 : _b.date);
-            core.debug(`${default_branch} branch sha ${defaultBranchCommit.sha} commit date: ${defaultBranchCommitDate}`);
+            core.info(`${default_branch} branch sha ${defaultBranchCommit.sha} commit date: ${defaultBranchCommitDate}`);
             const { data: currentBranchCommit } = yield octokit.rest.repos.getCommit(Object.assign(Object.assign({}, context.repo), { ref: context.ref }));
             const currentBranchCommitDate = ((_c = currentBranchCommit.commit.committer) === null || _c === void 0 ? void 0 : _c.date) || ((_d = currentBranchCommit.commit.author) === null || _d === void 0 ? void 0 : _d.date);
-            core.debug(`sha ${currentBranchCommit.sha} commit date: ${currentBranchCommitDate}`);
+            core.info(`sha ${currentBranchCommit.sha} commit date: ${currentBranchCommitDate}`);
         }
         catch (error) {
             core.setFailed(error.message);
