@@ -9,7 +9,7 @@ async function run(): Promise<void> {
     // The YML workflow will need to set myToken with the GitHub Secret Token
     // GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     // https://help.github.com/en/actions/automating-your-workflow-with-github-actions/authenticating-with-the-github_token#about-the-github_token-secret
-    const githubToken = core.getInput('token', {required: true})
+    const githubToken = core.getInput('GITHUB_TOKEN', {required: true})
 
     const octokit = github.getOctokit(githubToken)
 
