@@ -19,9 +19,12 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.createAction = void 0;
 function createAction(core, github) {
     return () => __awaiter(this, void 0, void 0, function* () {
-        var _a, _b, _c, _d, _e, _f, _g, _h;
+        var _a, _b, _c, _d, _e, _f;
         try {
             const { context } = github;
+            if (!context.payload.pull_request) {
+                throw new Error(`this action is only support for pull_request events! received event ${context.eventName}`);
+            }
             // This should be a token with access to your repository scoped in as a secret.
             // The YML workflow will need to set myToken with the GitHub Secret Token
             // GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -30,32 +33,33 @@ function createAction(core, github) {
             const freshnessHours = Number(core.getInput('freshnessHours', { required: true }));
             const octokit = github.getOctokit(githubToken);
             const pullRequestRef = context.ref;
-            const pullRequestBaseRef = (_b = (_a = context.payload.pull_request) === null || _a === void 0 ? void 0 : _a['base']) === null || _b === void 0 ? void 0 : _b['ref'];
+            const pullRequestBaseRef = (_a = context.payload.pull_request['base']) === null || _a === void 0 ? void 0 : _a['ref'];
             if (!pullRequestBaseRef) {
                 throw new Error('Could not determine base branch from payload');
             }
-            const { data: { commit: targetBranchCommit } } = yield octokit.rest.repos.getBranch(Object.assign(Object.assign({}, context.repo), { branch: pullRequestBaseRef }));
-            const targetBranchCommitDate = ((_c = targetBranchCommit.commit.committer) === null || _c === void 0 ? void 0 : _c.date) || ((_d = targetBranchCommit.commit.author) === null || _d === void 0 ? void 0 : _d.date);
-            if (!targetBranchCommitDate) {
+            const { data: { commit: targetBranchHeadCommit } } = yield octokit.rest.repos.getBranch(Object.assign(Object.assign({}, context.repo), { branch: pullRequestBaseRef }));
+            const targetBranchHeadCommitDate = ((_b = targetBranchHeadCommit.commit.committer) === null || _b === void 0 ? void 0 : _b.date) || ((_c = targetBranchHeadCommit.commit.author) === null || _c === void 0 ? void 0 : _c.date);
+            if (!targetBranchHeadCommitDate) {
                 throw new Error(`Could not determine HEAD timestamp of branch ${pullRequestBaseRef}`);
             }
-            core.info(`${pullRequestBaseRef} branch sha ${targetBranchCommit.sha} commit date: ${targetBranchCommitDate}`);
-            const baseCommitSha = (_f = (_e = context.payload.pull_request) === null || _e === void 0 ? void 0 : _e['base']) === null || _f === void 0 ? void 0 : _f['sha'];
+            core.info(`${pullRequestBaseRef} branch sha ${targetBranchHeadCommit.sha} commit date: ${targetBranchHeadCommitDate}`);
+            const baseCommitSha = (_d = context.payload.pull_request['base']) === null || _d === void 0 ? void 0 : _d['sha'];
             if (!baseCommitSha) {
                 throw new Error(`Could not determine base SHA of branch ${pullRequestRef}`);
             }
             const { data: currentBranchBaseCommit } = yield octokit.rest.repos.getCommit(Object.assign(Object.assign({}, context.repo), { ref: baseCommitSha }));
-            const currentBranchBaseCommitDate = ((_g = currentBranchBaseCommit.commit.committer) === null || _g === void 0 ? void 0 : _g.date) || ((_h = currentBranchBaseCommit.commit.author) === null || _h === void 0 ? void 0 : _h.date);
+            const currentBranchBaseCommitDate = ((_e = currentBranchBaseCommit.commit.committer) === null || _e === void 0 ? void 0 : _e.date) || ((_f = currentBranchBaseCommit.commit.author) === null || _f === void 0 ? void 0 : _f.date);
             if (!currentBranchBaseCommitDate) {
                 throw new Error(`Coult not determine HEAD timestamp of branch ${pullRequestRef}`);
             }
             core.info(`sha ${currentBranchBaseCommit.sha} commit date: ${currentBranchBaseCommitDate}`);
-            const delta = +new Date(targetBranchCommitDate) -
+            const delta = +new Date(targetBranchHeadCommitDate) -
                 +new Date(currentBranchBaseCommitDate);
             const deltaHours = Math.floor(delta / 1000 / 60 / 60);
-            core.info(`HEAD (commit ${targetBranchCommit.sha}) of branch ${pullRequestBaseRef} is ${Math.abs(deltaHours)} hours ahead of base commit ${currentBranchBaseCommit.sha} in branch ${pullRequestRef}`);
+            core.info(`HEAD (commit ${targetBranchHeadCommit.sha}) of branch ${pullRequestBaseRef} is ${deltaHours} hours ahead of base commit ${currentBranchBaseCommit.sha} in branch ${pullRequestRef}`);
             if (deltaHours > freshnessHours) {
-                core.setFailed(`Commit is not fresh because it is more than ${freshnessHours} hours behind target branch HEAD (commit ${targetBranchCommit})`);
+                core.setFailed(`Commit is not fresh because it is more than ${freshnessHours} hours behind target branch HEAD (commit ${targetBranchHeadCommit})`);
+                octokit.rest.pulls.createReviewComment(Object.assign(Object.assign({}, context.repo), { pull_number: context.payload.pull_request.number, body: `Hi There! Looks like HEAD (commit ${targetBranchHeadCommit.sha}) of branch ${pullRequestBaseRef} is ${Math.abs(deltaHours)} hours ahead of base commit ${currentBranchBaseCommit.sha}. We require all merged branches to be no more than ${freshnessHours} hours behind the target branch. Please rebase the branch in this pull request!` }));
             }
         }
         catch (error) {

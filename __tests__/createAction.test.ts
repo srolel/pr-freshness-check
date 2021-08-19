@@ -18,6 +18,9 @@ describe('createAction tests', () => {
       repos: {
         getBranch: jest.fn(),
         getCommit: jest.fn()
+      },
+      pulls: {
+        createReviewComment: jest.fn()
       }
     }
   }
@@ -139,12 +142,20 @@ Array [
     expect(core.setFailed.mock.calls).toMatchInlineSnapshot(`Array []`)
   })
 
-  test.only('fail', async () => {
+  test('fail', async () => {
     octokit.rest.repos.getBranch.mockImplementationOnce(() => ({
-      data: {commit: {commit: {committer: {date: '2021-08-19T05:30:25.063Z'}}}}
+      data: {
+        commit: {
+          sha: 'target_branch_head_commit_sha',
+          commit: {committer: {date: '2021-08-19T05:30:25.063Z'}}
+        }
+      }
     }))
     octokit.rest.repos.getCommit.mockImplementationOnce(() => ({
-      data: {commit: {committer: {date: '2021-08-19T03:30:25.063Z'}}}
+      data: {
+        sha: 'current_branch_base_commit_sha',
+        commit: {committer: {date: '2021-08-19T03:30:25.063Z'}}
+      }
     }))
     await run()
     expect(octokit.rest.repos.getBranch).toMatchInlineSnapshot(`
@@ -169,6 +180,7 @@ Array [
                 "date": "2021-08-19T05:30:25.063Z",
               },
             },
+            "sha": "target_branch_head_commit_sha",
           },
         },
       },
@@ -197,6 +209,7 @@ Array [
               "date": "2021-08-19T03:30:25.063Z",
             },
           },
+          "sha": "current_branch_base_commit_sha",
         },
       },
     },
@@ -209,6 +222,26 @@ Array [
     "Commit is not fresh because it is more than 1 hours behind target branch HEAD (commit [object Object])",
   ],
 ]
+`)
+    expect(octokit.rest.pulls.createReviewComment).toMatchInlineSnapshot(`
+[MockFunction] {
+  "calls": Array [
+    Array [
+      Object {
+        "body": "Hi There! Looks like HEAD (commit target_branch_head_commit_sha) of branch base_ref is 2 hours ahead of base commit current_branch_base_commit_sha. We require all merged branches to be no more than 1 hours behind the target branch. Please rebase the branch in this pull request!",
+        "owner": "owner",
+        "pull_number": undefined,
+        "repo": "repo",
+      },
+    ],
+  ],
+  "results": Array [
+    Object {
+      "type": "return",
+      "value": undefined,
+    },
+  ],
+}
 `)
   })
 })
