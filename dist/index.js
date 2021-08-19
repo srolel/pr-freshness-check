@@ -1,6 +1,73 @@
 require('./sourcemap-register.js');/******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
+/***/ 662:
+/***/ (function(__unused_webpack_module, exports) {
+
+"use strict";
+
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.createAction = void 0;
+function createAction(core, github) {
+    return () => __awaiter(this, void 0, void 0, function* () {
+        var _a, _b, _c, _d, _e, _f, _g, _h;
+        try {
+            const { context } = github;
+            // This should be a token with access to your repository scoped in as a secret.
+            // The YML workflow will need to set myToken with the GitHub Secret Token
+            // GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            // https://help.github.com/en/actions/automating-your-workflow-with-github-actions/authenticating-with-the-github_token#about-the-github_token-secret
+            const githubToken = core.getInput('GITHUB_TOKEN', { required: true });
+            const freshnessHours = Number(core.getInput('freshnessHours', { required: true }));
+            const octokit = github.getOctokit(githubToken);
+            const pullRequestRef = context.ref;
+            const pullRequestBaseRef = (_b = (_a = context.payload.pull_request) === null || _a === void 0 ? void 0 : _a['base']) === null || _b === void 0 ? void 0 : _b['ref'];
+            if (!pullRequestBaseRef) {
+                throw new Error('Could not determine base branch from payload');
+            }
+            const { data: { commit: targetBranchCommit } } = yield octokit.rest.repos.getBranch(Object.assign(Object.assign({}, context.repo), { branch: pullRequestBaseRef }));
+            const targetBranchCommitDate = ((_c = targetBranchCommit.commit.committer) === null || _c === void 0 ? void 0 : _c.date) || ((_d = targetBranchCommit.commit.author) === null || _d === void 0 ? void 0 : _d.date);
+            if (!targetBranchCommitDate) {
+                throw new Error(`Could not determine HEAD timestamp of branch ${pullRequestBaseRef}`);
+            }
+            core.info(`${pullRequestBaseRef} branch sha ${targetBranchCommit.sha} commit date: ${targetBranchCommitDate}`);
+            const baseCommitSha = (_f = (_e = context.payload.pull_request) === null || _e === void 0 ? void 0 : _e['base']) === null || _f === void 0 ? void 0 : _f['sha'];
+            if (!baseCommitSha) {
+                throw new Error(`Could not determine base SHA of branch ${pullRequestRef}`);
+            }
+            const { data: currentBranchBaseCommit } = yield octokit.rest.repos.getCommit(Object.assign(Object.assign({}, context.repo), { ref: baseCommitSha }));
+            const currentBranchBaseCommitDate = ((_g = currentBranchBaseCommit.commit.committer) === null || _g === void 0 ? void 0 : _g.date) || ((_h = currentBranchBaseCommit.commit.author) === null || _h === void 0 ? void 0 : _h.date);
+            if (!currentBranchBaseCommitDate) {
+                throw new Error(`Coult not determine HEAD timestamp of branch ${pullRequestRef}`);
+            }
+            core.info(`sha ${currentBranchBaseCommit.sha} commit date: ${currentBranchBaseCommitDate}`);
+            const delta = +new Date(targetBranchCommitDate) -
+                +new Date(currentBranchBaseCommitDate);
+            const deltaHours = Math.floor(delta / 1000 / 60 / 60);
+            core.info(`HEAD (commit ${targetBranchCommit.sha}) of branch ${pullRequestBaseRef} is ${Math.abs(deltaHours)} hours ahead of base commit ${currentBranchBaseCommit.sha} in branch ${pullRequestRef}`);
+            if (deltaHours > freshnessHours) {
+                core.setFailed(`Commit is not fresh because it is more than ${freshnessHours} hours behind target branch HEAD (commit ${targetBranchCommit})`);
+            }
+        }
+        catch (error) {
+            core.setFailed(error.message);
+        }
+    });
+}
+exports.createAction = createAction;
+
+
+/***/ }),
+
 /***/ 109:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -25,63 +92,11 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(186));
 const github = __importStar(__nccwpck_require__(438));
-function run() {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const { context } = github;
-            // This should be a token with access to your repository scoped in as a secret.
-            // The YML workflow will need to set myToken with the GitHub Secret Token
-            // GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            // https://help.github.com/en/actions/automating-your-workflow-with-github-actions/authenticating-with-the-github_token#about-the-github_token-secret
-            const githubToken = core.getInput('GITHUB_TOKEN', { required: true });
-            const freshnessHours = Number(core.getInput('freshnessHours', { required: true }));
-            const octokit = github.getOctokit(githubToken);
-            const currentBranchName = context.ref;
-            const targetBranchName = (_b = (_a = context.payload.pull_request) === null || _a === void 0 ? void 0 : _a['base']) === null || _b === void 0 ? void 0 : _b['ref'];
-            if (!targetBranchName) {
-                throw new Error('Could not determine base branch from payload');
-            }
-            const { data: { commit: targetBranchCommit } } = yield octokit.rest.repos.getBranch(Object.assign(Object.assign({}, context.repo), { branch: targetBranchName }));
-            const targetBranchCommitDate = ((_c = targetBranchCommit.commit.committer) === null || _c === void 0 ? void 0 : _c.date) || ((_d = targetBranchCommit.commit.author) === null || _d === void 0 ? void 0 : _d.date);
-            if (!targetBranchCommitDate) {
-                throw new Error(`Coult not determine HEAD timestamp of branch ${targetBranchName}`);
-            }
-            core.info(`${targetBranchName} branch sha ${targetBranchCommit.sha} commit date: ${targetBranchCommitDate}`);
-            const baseCommitSha = (_f = (_e = context.payload.pull_request) === null || _e === void 0 ? void 0 : _e['base']) === null || _f === void 0 ? void 0 : _f['sha'];
-            if (!baseCommitSha) {
-                throw new Error(`Coult not determine base SHA of branch ${currentBranchName}`);
-            }
-            const { data: currentBranchBaseCommit } = yield octokit.rest.repos.getCommit(Object.assign(Object.assign({}, context.repo), { ref: baseCommitSha }));
-            const currentBranchCommitDate = ((_g = currentBranchBaseCommit.commit.committer) === null || _g === void 0 ? void 0 : _g.date) || ((_h = currentBranchBaseCommit.commit.author) === null || _h === void 0 ? void 0 : _h.date);
-            if (!currentBranchCommitDate) {
-                throw new Error(`Coult not determine HEAD timestamp of branch ${currentBranchName}`);
-            }
-            core.info(`sha ${currentBranchBaseCommit.sha} commit date: ${currentBranchCommitDate}`);
-            const delta = +new Date(targetBranchCommitDate) - +new Date(currentBranchCommitDate);
-            const deltaHours = Math.floor(delta / 1000 / 60 / 60);
-            core.info(`HEAD (commit ${targetBranchCommit.sha}) of branch ${targetBranchName} is ${Math.abs(deltaHours)} hours ahead of base commit ${currentBranchBaseCommit.sha} in branch ${currentBranchName}`);
-            if (deltaHours > freshnessHours) {
-                core.setFailed(`Commit is not fresh because it is more than ${freshnessHours} hours behind target branch HEAD (commit ${targetBranchCommit})`);
-            }
-        }
-        catch (error) {
-            core.setFailed(error.message);
-        }
-    });
-}
+const createAction_1 = __nccwpck_require__(662);
+const run = createAction_1.createAction(core, github);
 run();
 
 
