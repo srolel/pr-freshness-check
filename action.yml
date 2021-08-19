@@ -1,11 +1,11 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'PR freshness check'
+description: 'Check PR freshness'
+author: 'Sharon (Sean) Rolel'
 inputs:
-  milliseconds: # change this
+  hours: # change this
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'how many hours behind default branch is considered fresh'
+    default: 24
 runs:
   using: 'node12'
   main: 'dist/index.js'
