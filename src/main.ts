@@ -30,7 +30,7 @@ async function run(): Promise<void> {
       defaultBranchCommit.commit.committer?.date ||
       defaultBranchCommit.commit.author?.date
 
-    core.debug(
+    core.info(
       `${default_branch} branch sha ${defaultBranchCommit.sha} commit date: ${defaultBranchCommitDate}`
     )
 
@@ -43,7 +43,7 @@ async function run(): Promise<void> {
       currentBranchCommit.commit.committer?.date ||
       currentBranchCommit.commit.author?.date
 
-    core.debug(
+    core.info(
       `sha ${currentBranchCommit.sha} commit date: ${currentBranchCommitDate}`
     )
   } catch (error) {
