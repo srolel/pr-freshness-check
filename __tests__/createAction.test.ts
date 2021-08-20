@@ -230,7 +230,7 @@ Array [
   "calls": Array [
     Array [
       Object {
-        "body": "Hi there! Looks like base_ref branch's HEAD commit target_branch_head_commit_sha is more than 1 hours ahead of base commit current_branch_base_commit_sha. We require all merged branches to be no more than 1 hours behind the target branch. Please rebase the branch in this pull request!",
+        "body": "Hi there! Looks like base_ref branch's HEAD commit target_branch_head_commit_sha is more than 1 hours ahead of this pull request's base commit current_branch_base_commit_sha. We require all merged branches to be no more than 1 hours behind the target branch. Please rebase the branch in this pull request!",
         "issue_number": 1,
         "owner": "owner",
         "repo": "repo",
