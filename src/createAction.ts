@@ -89,7 +89,7 @@ export function createAction(
       const deltaHours = Math.floor(delta / 1000 / 60 / 60)
 
       core.info(
-        `HEAD (commit ${targetBranchHeadCommit.sha}) of branch ${pullRequestBaseRef} is more than ${deltaHours} hours ahead of this pull request's base commit ${currentBranchBaseCommit.sha} in branch ${pullRequestRef}`
+        `This pull request's base commit ${currentBranchBaseCommit.sha} in branch ${pullRequestRef} is more than ${deltaHours} hours behind of HEAD (commit ${targetBranchHeadCommit.sha}) of branch ${pullRequestBaseRef}`
       )
 
       if (deltaHours >= freshnessHours) {
@@ -99,7 +99,7 @@ export function createAction(
         await octokit.rest.issues.createComment({
           ...context.repo,
           issue_number: context.payload.pull_request.number,
-          body: `Hi there! Looks like ${pullRequestBaseRef} branch's HEAD commit ${targetBranchHeadCommit.sha} is more than ${deltaHours} hours ahead of this pull request's base commit ${currentBranchBaseCommit.sha}. We require all merged branches to be no more than ${freshnessHours} hours behind the target branch. Please rebase the branch in this pull request!`
+          body: `Hi there! Looks like this pull request's base commit ${currentBranchBaseCommit.sha} is more than ${deltaHours} hours behind of ${pullRequestBaseRef} branch's HEAD commit ${targetBranchHeadCommit.sha}. We require all merged branches to be no more than ${freshnessHours} hours behind the target branch. Please rebase the branch in this pull request!`
         })
       }
     } catch (error) {
